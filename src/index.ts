@@ -1,4 +1,4 @@
-import { msgBox, log, sheet } from "./exportExamples";
+import { log, msgBox, sheet } from "./exportExamples";
 
 declare let global: any;
 global.main = () => {

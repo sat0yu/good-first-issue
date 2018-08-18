@@ -4,6 +4,7 @@
     "@types/google-apps-script": "^0.0.27",
     "gas-webpack-plugin": "^0.3.0",
     "ts-loader": "^4.5.0",
+    "tslint": "^5.11.0",
     "typescript": "^3.0.1",
     "webpack": "^4.16.5"
   },
@@ -13,6 +14,9 @@
   "repository": "git@github.com:sat0yu/good-first-issue.git",
   "author": "Yusuke Sato <yusuke1.sato9.git@gmail.com>",
   "license": "MIT",
+  "scripts": {
+    "lint": "yarn tslint --fix src/**/*.ts",
+  },
   "devDependencies": {
     "webpack-cli": "^3.1.0"
   }
