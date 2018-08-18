@@ -1,4 +1,5 @@
 const path = require('path');
+const GasPlugin = require("gas-webpack-plugin");
 
 module.exports = {
   mode: 'development',
@@ -21,5 +22,8 @@ module.exports = {
     extensions: [
       '.ts'
     ]
-  }
+  },
+  plugins: [
+    new GasPlugin(),
+  ],
 };
