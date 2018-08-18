@@ -17,5 +17,11 @@ yarn clasp clone <YOUR_PROJECT_ID>
 
 ## deploy
 ```sh
-yarn clasp push
+yarn deploy
 ```
+
+## stack
+- [google/clasp](https://github.com/google/clasp)
+- [webpack](https://webpack.js.org/)
+- [TypeScript](http://www.typescriptlang.org/)
+- [TSLint](https://palantir.github.io/tslint/)
