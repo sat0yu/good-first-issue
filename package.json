@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@google/clasp": "^1.5.3",
+    "@types/google-apps-script": "^0.0.27",
     "ts-loader": "^4.5.0",
     "typescript": "^3.0.1",
     "webpack": "^4.16.5"
