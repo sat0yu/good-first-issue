@@ -1,5 +1,7 @@
 {
-  "dependencies": {},
+  "dependencies": {
+    "@google/clasp": "^1.5.3"
+  },
   "name": "good-first-issue",
   "version": "1.0.0",
   "main": "index.js",
