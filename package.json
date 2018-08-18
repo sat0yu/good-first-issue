@@ -1,11 +1,17 @@
 {
   "dependencies": {
-    "@google/clasp": "^1.5.3"
+    "@google/clasp": "^1.5.3",
+    "ts-loader": "^4.5.0",
+    "typescript": "^3.0.1",
+    "webpack": "^4.16.5"
   },
   "name": "good-first-issue",
   "version": "1.0.0",
   "main": "index.js",
   "repository": "git@github.com:sat0yu/good-first-issue.git",
   "author": "Yusuke Sato <yusuke1.sato9.git@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "webpack-cli": "^3.1.0"
+  }
 }
