@@ -1,0 +1,9 @@
+{
+  "dependencies": {},
+  "name": "good-first-issue",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:sat0yu/good-first-issue.git",
+  "author": "Yusuke Sato <yusuke1.sato9.git@gmail.com>",
+  "license": "MIT"
+}
