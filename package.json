@@ -16,6 +16,8 @@
   "license": "MIT",
   "scripts": {
     "lint": "yarn tslint --fix src/**/*.ts",
+    "build": "yarn lint && webpack",
+    "deploy": "yarn build && yarn clasp push"
   },
   "devDependencies": {
     "webpack-cli": "^3.1.0"
