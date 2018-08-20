@@ -1,8 +1,13 @@
-import { log, msgBox, sheet } from "./exportExamples";
+import { fetchIssues, IResponse } from "./github";
 
 declare let global: any;
+
+const token = process.env.GITHUB_TOKEN;
+if (!token) {
+  throw new Error("set GITHUB_TOKEN in your .env file");
+}
+
 global.main = () => {
-  msgBox();
-  log();
-  sheet();
+  const data: IResponse = fetchIssues(token);
+  Logger.log(data.repository);
 };
