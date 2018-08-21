@@ -9,6 +9,8 @@ if (!token) {
 }
 
 global.main = () => {
+  const MAX_ROW_NUMBER = 128;
+  const MAX_COL_NUMBER = 64;
   const rowBuilder = (issue: IIssue) => {
     const {title, author, url} = issue;
     Logger.log(issue);
@@ -25,6 +27,7 @@ global.main = () => {
     const data = fetchIssuesRequest(owner, repository);
     const issues = data.repository.issues.edges.map((e) => e.node);
     const dataArray = buildDataMatrix<IIssue>(issues, rowBuilder);
+    sheet.getRange(1, 1, MAX_ROW_NUMBER, MAX_COL_NUMBER).clear();
     sheet.getRange(1, 1, dataArray.length, dataArray[0].length).setValues(dataArray);
   });
 };
