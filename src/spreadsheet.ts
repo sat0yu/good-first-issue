@@ -1,8 +1,8 @@
 import { IIssue } from "./github";
 
-export const getSheet = () => {
+export const getSheets = () => {
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  return spreadsheet.getActiveSheet();
+  return spreadsheet.getSheets();
 };
 
 export const buildDataMatrix = <T>(

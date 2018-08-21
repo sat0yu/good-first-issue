@@ -40,10 +40,10 @@ const buildRequestOption = (query: string, token: string) => {
   };
 };
 
-export const fetchIssues = (token: string) => {
+export const fetchIssuesRequestFactory = <T>(token: string) => (owner: string, repository: string) => {
   const graphql = `
     {
-      repository(owner: "nodejs", name: "node") {
+      repository(owner: "${owner}", name: "${repository}") {
         issues(last: 50) {
           totalCount
           pageInfo {
@@ -77,5 +77,5 @@ export const fetchIssues = (token: string) => {
   const option = buildRequestOption(graphql, token);
   const res = UrlFetchApp.fetch(GITHUB_ENDPOINT, option);
   const json = JSON.parse(res.getContentText());
-  return json.data;
+  return json.data as T;
 };

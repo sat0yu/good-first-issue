@@ -1,5 +1,5 @@
-import { fetchIssues, IIssue, IResponse } from "./github";
-import { buildDataMatrix, getSheet } from "./spreadsheet";
+import { fetchIssuesRequestFactory, IIssue, IResponse } from "./github";
+import { buildDataMatrix, getSheets } from "./spreadsheet";
 
 declare let global: any;
 
@@ -9,8 +9,6 @@ if (!token) {
 }
 
 global.main = () => {
-  const data: IResponse = fetchIssues(token);
-
   const rowBuilder = (issue: IIssue) => {
     const {title, author, url} = issue;
     Logger.log(issue);
@@ -19,8 +17,14 @@ global.main = () => {
       author && author.login,
     ];
   };
-  const issues = data.repository.issues.edges.map((e) => e.node);
-  const dataArray = buildDataMatrix<IIssue>(issues, rowBuilder);
-  const sheet = getSheet();
-  sheet.getRange(1, 1, dataArray.length, dataArray[0].length).setValues(dataArray);
+  const fetchIssuesRequest = fetchIssuesRequestFactory<IResponse>(token);
+  const sheets = getSheets();
+  sheets.forEach((sheet) => {
+    const sheetName = sheet.getName();
+    const [ owner, repository ] = sheetName.split("/");
+    const data = fetchIssuesRequest(owner, repository);
+    const issues = data.repository.issues.edges.map((e) => e.node);
+    const dataArray = buildDataMatrix<IIssue>(issues, rowBuilder);
+    sheet.getRange(1, 1, dataArray.length, dataArray[0].length).setValues(dataArray);
+  });
 };
