@@ -12,10 +12,10 @@ global.main = () => {
   const data: IResponse = fetchIssues(token);
 
   const rowBuilder = (issue: IIssue) => {
-    const {title, author} = issue;
+    const {title, author, url} = issue;
     Logger.log(issue);
     return [
-      title,
+      `=HYPERLINK("${url}", "${title.replace(/"/g, "'")}")`,
       author && author.login,
     ];
   };
