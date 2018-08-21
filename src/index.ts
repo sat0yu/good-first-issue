@@ -1,4 +1,5 @@
-import { fetchIssues, IResponse } from "./github";
+import { fetchIssues, IIssue, IResponse } from "./github";
+import { buildDataMatrix, getSheet } from "./spreadsheet";
 
 declare let global: any;
 
@@ -10,18 +11,16 @@ if (!token) {
 global.main = () => {
   const data: IResponse = fetchIssues(token);
 
-  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = spreadsheet.getActiveSheet();
-  const lastRow = data.repository.issues.edges.length;
-  const lastColumn = 2;
-  const dataRange = sheet.getRange(1, 1, lastRow, lastColumn);
-  const dataArray = dataRange.getValues();
-
-  data.repository.issues.edges.forEach((edge, i) => {
-    const {title, author} = edge.node;
-    Logger.log(edge.node);
-    dataArray[i][0] = title;
-    dataArray[i][1] = author && author.login;
-  });
-  sheet.getRange(1, 1, lastRow, lastColumn).setValues(dataArray);
+  const rowBuilder = (issue: IIssue) => {
+    const {title, author} = issue;
+    Logger.log(issue);
+    return [
+      title,
+      author && author.login,
+    ];
+  };
+  const issues = data.repository.issues.edges.map((e) => e.node);
+  const dataArray = buildDataMatrix<IIssue>(issues, rowBuilder);
+  const sheet = getSheet();
+  sheet.getRange(1, 1, dataArray.length, dataArray[0].length).setValues(dataArray);
 };
