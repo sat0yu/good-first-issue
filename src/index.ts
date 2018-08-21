@@ -26,6 +26,7 @@ global.main = () => {
     const [ owner, repository ] = sheetName.split("/");
     const data = fetchIssuesRequest(owner, repository);
     const issues = data.repository.issues.edges.map((e) => e.node);
+    if (issues.length === 0) { return; }
     const dataArray = buildDataMatrix<IIssue>(issues, rowBuilder);
     sheet.getRange(1, 1, MAX_ROW_NUMBER, MAX_COL_NUMBER).clear();
     sheet.getRange(1, 1, dataArray.length, dataArray[0].length).setValues(dataArray);
