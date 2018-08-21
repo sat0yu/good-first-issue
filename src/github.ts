@@ -21,6 +21,7 @@ export interface IIssue {
   url: string;
   author: IUser;
   participants: IConnection<IUser>;
+  createdAt: string;
   updatedAt: string;
   labels: IConnection<ILabel>;
   comments: IConnection<IComment>;
@@ -80,6 +81,7 @@ export const fetchIssuesRequestFactory = <T>(token: string) => (
                 url
                 avatarUrl
               }
+              createdAt
               updatedAt
               labels(first: 10) {
                 edges {
