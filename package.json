@@ -20,6 +20,8 @@
     "deploy": "yarn build && yarn clasp push"
   },
   "devDependencies": {
+    "@types/node": "^10.7.1",
+    "dotenv-webpack": "^1.5.7",
     "webpack-cli": "^3.1.0"
   }
 }
