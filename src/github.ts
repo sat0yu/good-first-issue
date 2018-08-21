@@ -6,6 +6,10 @@ export interface IUser {
   url: string;
 }
 
+export interface IComment {
+  author: IUser;
+}
+
 export interface ILabel {
   name: string;
   url: string;
@@ -15,10 +19,12 @@ export interface IIssue {
   title: string;
   id: string;
   url: string;
-  author: IUser | undefined;
+  author: IUser;
   participants: IConnection<IUser>;
+  createdAt: string;
   updatedAt: string;
   labels: IConnection<ILabel>;
+  comments: IConnection<IComment>;
 }
 
 export interface IEdge<T> {
@@ -28,6 +34,7 @@ export interface IEdge<T> {
 
 export interface IConnection<T> {
   edges: Array<IEdge<T>>;
+  totalCount: number;
 }
 
 export interface IRepositoty {
@@ -74,6 +81,7 @@ export const fetchIssuesRequestFactory = <T>(token: string) => (
                 url
                 avatarUrl
               }
+              createdAt
               updatedAt
               labels(first: 10) {
                 edges {
@@ -82,6 +90,9 @@ export const fetchIssuesRequestFactory = <T>(token: string) => (
                     url
                   }
                 }
+              }
+              comments(first: 1) {
+                totalCount
               }
               participants(first: 50) {
                 edges {

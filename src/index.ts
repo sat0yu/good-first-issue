@@ -1,5 +1,5 @@
 import { fetchIssuesRequestFactory, IIssue, IResponse } from "./github";
-import { buildDataMatrix, getSheets } from "./spreadsheet";
+import { buildDataMatrix, clearSheet, fillSheet, getSheets } from "./spreadsheet";
 
 declare let global: any;
 
@@ -9,15 +9,24 @@ if (!token) {
 }
 
 global.main = () => {
-  const MAX_ROW_NUMBER = 128;
-  const MAX_COL_NUMBER = 64;
+  const header = [[
+    "",
+    "author",
+    "title",
+    "created at",
+    "updated at",
+    "# of comments",
+    "labels",
+  ]];
   const rowBuilder = (issue: IIssue) => {
-    const {title, author, url, labels, updatedAt} = issue;
+    const {title, author, url, labels, updatedAt, createdAt, comments} = issue;
     return [
       author && author.avatarUrl && `=IMAGE("${author.avatarUrl}")`,
       author && author.login && `=HYPERLINK("${author.url}", "${author.login}")`,
-      (new Date(updatedAt)).toDateString(),
       `=HYPERLINK("${url}", "${title.replace(/"/g, "'")}")`,
+      (new Date(createdAt)).toDateString(),
+      (new Date(updatedAt)).toDateString(),
+      comments.totalCount.toString(),
       labels.edges.reduce((acc, e) => [...acc, e.node.name], []).join(", "),
     ];
   };
@@ -30,8 +39,9 @@ global.main = () => {
     const data = fetchIssuesRequest(owner, repository, label);
     const issues = data.repository.issues.edges.map((e) => e.node);
     if (issues.length === 0) { return; }
-    const dataArray = buildDataMatrix<IIssue>(issues, rowBuilder);
-    sheet.getRange(1, 1, MAX_ROW_NUMBER, MAX_COL_NUMBER).clear();
-    sheet.getRange(1, 1, dataArray.length, dataArray[0].length).setValues(dataArray);
+    const dataMatrix = buildDataMatrix<IIssue>(issues, rowBuilder);
+    clearSheet(sheet);
+    fillSheet(sheet, header);
+    fillSheet(sheet, dataMatrix, 1, 2);
   });
 };
