@@ -8,7 +8,7 @@ export interface IIssue {
   title: string;
   id: string;
   url: string;
-  author: IUser;
+  author: IUser | undefined;
   participants: IConnection<IUser>;
 }
 

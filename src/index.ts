@@ -9,5 +9,19 @@ if (!token) {
 
 global.main = () => {
   const data: IResponse = fetchIssues(token);
-  Logger.log(data.repository);
+
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = spreadsheet.getActiveSheet();
+  const lastRow = data.repository.issues.edges.length;
+  const lastColumn = 2;
+  const dataRange = sheet.getRange(1, 1, lastRow, lastColumn);
+  const dataArray = dataRange.getValues();
+
+  data.repository.issues.edges.forEach((edge, i) => {
+    const {title, author} = edge.node;
+    Logger.log(edge.node);
+    dataArray[i][0] = title;
+    dataArray[i][1] = author && author.login;
+  });
+  sheet.getRange(1, 1, lastRow, lastColumn).setValues(dataArray);
 };
