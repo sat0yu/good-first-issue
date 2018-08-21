@@ -12,19 +12,21 @@ global.main = () => {
   const MAX_ROW_NUMBER = 128;
   const MAX_COL_NUMBER = 64;
   const rowBuilder = (issue: IIssue) => {
-    const {title, author, url} = issue;
-    Logger.log(issue);
+    const {title, author, url, labels, updatedAt} = issue;
     return [
+      author && author.avatarUrl && `=IMAGE("${author.avatarUrl}")`,
+      author && author.login && `=HYPERLINK("${author.url}", "${author.login}")`,
+      (new Date(updatedAt)).toDateString(),
       `=HYPERLINK("${url}", "${title.replace(/"/g, "'")}")`,
-      author && author.login,
+      labels.edges.reduce((acc, e) => [...acc, e.node.name], []).join(", "),
     ];
   };
   const fetchIssuesRequest = fetchIssuesRequestFactory<IResponse>(token);
   const sheets = getSheets();
   sheets.forEach((sheet) => {
     const sheetName = sheet.getName();
-    const [ owner, repository ] = sheetName.split("/");
-    const data = fetchIssuesRequest(owner, repository);
+    const [ owner, repository, label ] = sheetName.split("/");
+    const data = fetchIssuesRequest(owner, repository, label);
     const issues = data.repository.issues.edges.map((e) => e.node);
     if (issues.length === 0) { return; }
     const dataArray = buildDataMatrix<IIssue>(issues, rowBuilder);
