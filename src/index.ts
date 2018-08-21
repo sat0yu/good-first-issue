@@ -9,6 +9,15 @@ if (!token) {
 }
 
 global.main = () => {
+  const header = [[
+    "",
+    "author",
+    "title",
+    "created at",
+    "updated at",
+    "# of comments",
+    "labels",
+  ]];
   const rowBuilder = (issue: IIssue) => {
     const {title, author, url, labels, updatedAt, createdAt, comments} = issue;
     return [
@@ -32,6 +41,7 @@ global.main = () => {
     if (issues.length === 0) { return; }
     const dataMatrix = buildDataMatrix<IIssue>(issues, rowBuilder);
     clearSheet(sheet);
-    fillSheet(sheet, dataMatrix);
+    fillSheet(sheet, header);
+    fillSheet(sheet, dataMatrix, 1, 2);
   });
 };

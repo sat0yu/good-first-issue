@@ -23,6 +23,8 @@ export const clearSheet = (sheet: GoogleAppsScript.Spreadsheet.Sheet) => {
 export const fillSheet = (
   sheet: GoogleAppsScript.Spreadsheet.Sheet,
   dataMatrix: string[][],
+  x: number = 1,
+  y: number = 1,
 ) => {
-  sheet.getRange(1, 1, dataMatrix.length, dataMatrix[0].length).setValues(dataMatrix);
+  sheet.getRange(y, x, dataMatrix.length, dataMatrix[0].length).setValues(dataMatrix);
 };
