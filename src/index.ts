@@ -26,6 +26,7 @@ global.main = () => {
   sheets.forEach((sheet) => {
     const sheetName = sheet.getName();
     const [ owner, repository, label ] = sheetName.split("/");
+    if (!owner || !repository || !label) { return; }
     const data = fetchIssuesRequest(owner, repository, label);
     const issues = data.repository.issues.edges.map((e) => e.node);
     if (issues.length === 0) { return; }
