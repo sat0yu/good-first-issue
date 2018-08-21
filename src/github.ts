@@ -2,6 +2,13 @@ const GITHUB_ENDPOINT = "https://api.github.com/graphql";
 
 export interface IUser {
   login: string;
+  avatarUrl: string;
+  url: string;
+}
+
+export interface ILabel {
+  name: string;
+  url: string;
 }
 
 export interface IIssue {
@@ -10,6 +17,8 @@ export interface IIssue {
   url: string;
   author: IUser | undefined;
   participants: IConnection<IUser>;
+  updatedAt: string;
+  labels: IConnection<ILabel>;
 }
 
 export interface IEdge<T> {
@@ -40,11 +49,15 @@ const buildRequestOption = (query: string, token: string) => {
   };
 };
 
-export const fetchIssues = (token: string) => {
+export const fetchIssuesRequestFactory = <T>(token: string) => (
+  owner: string,
+  repository: string,
+  label: string,
+) => {
   const graphql = `
     {
-      repository(owner: "nodejs", name: "node") {
-        issues(last: 50) {
+      repository(owner: "${owner}", name: "${repository}") {
+        issues(first: 100, labels: ["${label}"], states: OPEN, orderBy: {field: UPDATED_AT, direction: DESC}) {
           totalCount
           pageInfo {
             hasNextPage
@@ -55,14 +68,25 @@ export const fetchIssues = (token: string) => {
           edges {
             node {
               title
-              id
               url
               author {
                 login
+                url
+                avatarUrl
+              }
+              updatedAt
+              labels(first: 10) {
+                edges {
+                  node {
+                    name
+                    url
+                  }
+                }
               }
               participants(first: 50) {
                 edges {
                   node {
+                    avatarUrl
                     login
                   }
                 }
@@ -77,5 +101,5 @@ export const fetchIssues = (token: string) => {
   const option = buildRequestOption(graphql, token);
   const res = UrlFetchApp.fetch(GITHUB_ENDPOINT, option);
   const json = JSON.parse(res.getContentText());
-  return json.data;
+  return json.data as T;
 };
