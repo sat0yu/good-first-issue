@@ -10,12 +10,13 @@ if (!token) {
 
 global.main = () => {
   const rowBuilder = (issue: IIssue) => {
-    const {title, author, url, labels, updatedAt} = issue;
+    const {title, author, url, labels, updatedAt, comments} = issue;
     return [
       author && author.avatarUrl && `=IMAGE("${author.avatarUrl}")`,
       author && author.login && `=HYPERLINK("${author.url}", "${author.login}")`,
-      (new Date(updatedAt)).toDateString(),
       `=HYPERLINK("${url}", "${title.replace(/"/g, "'")}")`,
+      (new Date(updatedAt)).toDateString(),
+      comments.totalCount.toString(),
       labels.edges.reduce((acc, e) => [...acc, e.node.name], []).join(", "),
     ];
   };
