@@ -1,5 +1,5 @@
 import { fetchIssuesRequestFactory, IIssue, IResponse } from "./github";
-import { buildDataMatrix, getSheets } from "./spreadsheet";
+import { buildDataMatrix, clearSheet, fillSheet, getSheets } from "./spreadsheet";
 
 declare let global: any;
 
@@ -9,8 +9,6 @@ if (!token) {
 }
 
 global.main = () => {
-  const MAX_ROW_NUMBER = 128;
-  const MAX_COL_NUMBER = 64;
   const rowBuilder = (issue: IIssue) => {
     const {title, author, url, labels, updatedAt} = issue;
     return [
@@ -30,8 +28,8 @@ global.main = () => {
     const data = fetchIssuesRequest(owner, repository, label);
     const issues = data.repository.issues.edges.map((e) => e.node);
     if (issues.length === 0) { return; }
-    const dataArray = buildDataMatrix<IIssue>(issues, rowBuilder);
-    sheet.getRange(1, 1, MAX_ROW_NUMBER, MAX_COL_NUMBER).clear();
-    sheet.getRange(1, 1, dataArray.length, dataArray[0].length).setValues(dataArray);
+    const dataMatrix = buildDataMatrix<IIssue>(issues, rowBuilder);
+    clearSheet(sheet);
+    fillSheet(sheet, dataMatrix);
   });
 };
