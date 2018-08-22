@@ -61,10 +61,11 @@ export const fetchIssuesRequestFactory = <T>(token: string) => (
   repository: string,
   label: string,
 ) => {
+  const labels = label === "*" ? "" : `labels: ["${label}"]`;
   const graphql = `
     {
       repository(owner: "${owner}", name: "${repository}") {
-        issues(first: 100, labels: ["${label}"], states: OPEN, orderBy: {field: UPDATED_AT, direction: DESC}) {
+        issues(first: 100, states: OPEN, orderBy: {field: UPDATED_AT, direction: DESC}, ${labels}) {
           totalCount
           pageInfo {
             hasNextPage
