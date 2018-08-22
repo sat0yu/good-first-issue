@@ -45,3 +45,10 @@ global.main = () => {
     fillSheet(sheet, dataMatrix, 1, 2);
   });
 };
+
+global.onOpen = () => {
+  const ui = SpreadsheetApp.getUi();
+  const menu = ui.createMenu("good first issue");
+  menu.addItem("update", "main");
+  menu.addToUi();
+};
