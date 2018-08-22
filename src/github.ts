@@ -94,13 +94,8 @@ export const fetchIssuesRequestFactory = <T>(token: string) => (
               comments(first: 1) {
                 totalCount
               }
-              participants(first: 50) {
-                edges {
-                  node {
-                    avatarUrl
-                    login
-                  }
-                }
+              participants(first: 1) {
+                totalCount
               }
             }
           }

@@ -16,10 +16,11 @@ global.main = () => {
     "created at",
     "updated at",
     "# of comments",
+    "# of participants",
     "labels",
   ]];
   const rowBuilder = (issue: IIssue) => {
-    const {title, author, url, labels, updatedAt, createdAt, comments} = issue;
+    const {title, author, url, labels, updatedAt, createdAt, comments, participants} = issue;
     return [
       author && author.avatarUrl && `=IMAGE("${author.avatarUrl}")`,
       author && author.login && `=HYPERLINK("${author.url}", "${author.login}")`,
@@ -27,6 +28,7 @@ global.main = () => {
       (new Date(createdAt)).toDateString(),
       (new Date(updatedAt)).toDateString(),
       comments.totalCount.toString(),
+      participants.totalCount.toString(),
       labels.edges.reduce((acc, e) => [...acc, e.node.name], []).join(", "),
     ];
   };
