@@ -25,6 +25,7 @@ export interface IIssue {
   updatedAt: string;
   labels: IConnection<ILabel>;
   comments: IConnection<IComment>;
+  repository: IRepository;
 }
 
 export interface IEdge<T> {
@@ -37,12 +38,22 @@ export interface IConnection<T> {
   totalCount: number;
 }
 
-export interface IRepositoty {
-  issues: IConnection<IIssue>;
+export interface IRepository {
+  name: string;
+  url: string;
+  issues?: IConnection<IIssue>;
+}
+
+export interface ISearch {
+  edges: Array<IEdge<IRepository>>;
+}
+
+export interface IData {
+  search: ISearch;
 }
 
 export interface IResponse {
-  repository: IRepositoty;
+  data: IData;
 }
 
 const buildRequestOption = (query: string, token: string) => {
@@ -57,46 +68,55 @@ const buildRequestOption = (query: string, token: string) => {
 };
 
 export const fetchIssuesRequestFactory = <T>(token: string) => (
-  owner: string,
-  repository: string,
+  repoQuery: string,
   label: string,
 ) => {
   const labels = label === "*" ? "" : `labels: ["${label}"]`;
   const graphql = `
     {
-      repository(owner: "${owner}", name: "${repository}") {
-        issues(first: 100, states: OPEN, orderBy: {field: UPDATED_AT, direction: DESC}, ${labels}) {
-          totalCount
-          pageInfo {
-            hasNextPage
-            hasPreviousPage
-            endCursor
-            startCursor
-          }
-          edges {
-            node {
-              title
-              url
-              author {
-                login
-                url
-                avatarUrl
-              }
-              createdAt
-              updatedAt
-              labels(first: 10) {
+      search(query: "${repoQuery}", type: REPOSITORY, first: 100) {
+        edges {
+          node {
+            ... on Repository {
+              issues(first: 100, states: OPEN, orderBy: {field: UPDATED_AT, direction: DESC}, ${labels}) {
+                totalCount
+                pageInfo {
+                  hasNextPage
+                  hasPreviousPage
+                  endCursor
+                  startCursor
+                }
                 edges {
                   node {
-                    name
+                    title
                     url
+                    author {
+                      login
+                      url
+                      avatarUrl
+                    }
+                    createdAt
+                    updatedAt
+                    labels(first: 5) {
+                      edges {
+                        node {
+                          name
+                          url
+                        }
+                      }
+                    }
+                    comments(first: 1) {
+                      totalCount
+                    }
+                    participants(first: 1) {
+                      totalCount
+                    }
+                    repository {
+                      name
+                      url
+                    }
                   }
                 }
-              }
-              comments(first: 1) {
-                totalCount
-              }
-              participants(first: 1) {
-                totalCount
               }
             }
           }
@@ -108,5 +128,5 @@ export const fetchIssuesRequestFactory = <T>(token: string) => (
   const option = buildRequestOption(graphql, token);
   const res = UrlFetchApp.fetch(GITHUB_ENDPOINT, option);
   const json = JSON.parse(res.getContentText());
-  return json.data as T;
+  return json as T;
 };

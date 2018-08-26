@@ -12,6 +12,7 @@ global.main = () => {
   const header = [[
     "",
     "author",
+    "repo.",
     "title",
     "created at",
     "updated at",
@@ -20,10 +21,22 @@ global.main = () => {
     "labels",
   ]];
   const rowBuilder = (issue: IIssue) => {
-    const {title, author, url, labels, updatedAt, createdAt, comments, participants} = issue;
+    const {
+      title,
+      author,
+      url,
+      labels,
+      updatedAt,
+      createdAt,
+      comments,
+      participants,
+      repository: repo,
+    } = issue;
+
     return [
       author && author.avatarUrl && `=IMAGE("${author.avatarUrl}")`,
       author && author.login && `=HYPERLINK("${author.url}", "${author.login}")`,
+      `=HYPERLINK("${repo.url}", "${repo.name.replace(/"/g, "'")}")`,
       `=HYPERLINK("${url}", "${title.replace(/"/g, "'")}")`,
       (new Date(createdAt)).toDateString(),
       (new Date(updatedAt)).toDateString(),
@@ -36,11 +49,20 @@ global.main = () => {
   const sheets = getSheets();
   sheets.forEach((sheet) => {
     const sheetName = sheet.getName();
-    const [ owner, repository, label ] = sheetName.split("/");
-    if (!owner || !repository || !label) { return; }
-    const data = fetchIssuesRequest(owner, repository, label);
-    const issues = data.repository.issues.edges.map((e) => e.node);
-    if (issues.length === 0) { return; }
+    const [ repoQuery, label ] = sheetName.split("/");
+    if (!repoQuery || !label) {
+      Logger.log(`[${sheetName}] invalid sheet name`);
+      return;
+    }
+    const { data } = fetchIssuesRequest(repoQuery, label);
+    const issues = data.search.edges.reduce((acc, repoEdge) => [
+      ...acc,
+      ...repoEdge.node.issues.edges.map((issueEdge) => issueEdge.node),
+    ], []);
+    if (issues.length === 0) {
+      Logger.log(`[${sheetName}] found no issue`);
+      return;
+    }
     const dataMatrix = buildDataMatrix<IIssue>(issues, rowBuilder);
     clearSheet(sheet);
     fillSheet(sheet, header);
