@@ -1,7 +1,7 @@
 import { IIssue } from "./github";
 
-const MAX_ROW_NUMBER = 128;
-const MAX_COL_NUMBER = 64;
+const MAX_ROW_NUMBER = 512;
+const MAX_COL_NUMBER = 32;
 
 export const getSheets = () => {
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
