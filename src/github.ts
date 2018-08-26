@@ -48,12 +48,17 @@ export interface ISearch {
   edges: Array<IEdge<IRepository>>;
 }
 
+export interface IError {
+  message: string;
+}
+
 export interface IData {
   search: ISearch;
 }
 
 export interface IResponse {
   data: IData;
+  errors?: IError[];
 }
 
 const buildRequestOption = (query: string, token: string) => {
@@ -63,6 +68,7 @@ const buildRequestOption = (query: string, token: string) => {
       Authorization: `bearer ${token}`,
     },
     method: "post" as "post" | "get" | "delete" | "patch" | "put",
+    muteHttpExceptions: true,
     payload: JSON.stringify({ query }),
   };
 };

@@ -54,7 +54,13 @@ global.main = () => {
       Logger.log(`[${sheetName}] invalid sheet name`);
       return;
     }
-    const { data } = fetchIssuesRequest(repoQuery, label);
+    const { data, errors } = fetchIssuesRequest(repoQuery, label);
+    if (errors && errors.length > 0) {
+      errors.forEach((error) => {
+        Logger.log(`[${sheetName}] ${error.message}`);
+      });
+      return;
+    }
     const issues = data.search.edges.reduce((acc, repoEdge) => [
       ...acc,
       ...repoEdge.node.issues.edges.map((issueEdge) => issueEdge.node),
