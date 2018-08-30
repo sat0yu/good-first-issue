@@ -48,3 +48,7 @@ export const fillSheet = <E, T>(
   sheet.getRange(1, 1, 1, Object.keys(header).length).setValues([headerRow]);
   sheet.getRange(2, 1, rows.length, Object.keys(contents[0]).length).setValues(contents);
 };
+
+export const getPrevSheet = (sheet: GoogleAppsScript.Spreadsheet.Sheet) => {
+  return sheet.getRange(1, 1, MAX_ROW_NUMBER, MAX_COL_NUMBER).getValues();
+};

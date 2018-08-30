@@ -1,5 +1,5 @@
 import { fetchIssuesRequestFactory, IIssue, IResponse } from "./github";
-import { clearSheet, fillSheet, getSheets, IHeader, IRow } from "./spreadsheet";
+import { clearSheet, fillSheet, getPrevSheet, getSheets, IHeader, IRow } from "./spreadsheet";
 
 declare let global: any;
 
@@ -15,46 +15,62 @@ interface ISpreadSheet {
   author: string;
   createdAt: string;
   labels: string;
+  isNew: string;
   repo: string;
   title: string;
   updatedAt: string;
 }
 
-const header: IHeader<ISpreadSheet> = {
-  author: 1,
-  avatar: 0,
-  comments: 6,
-  createdAt: 4,
-  labels: 8,
-  participants: 7,
-  repo: 2,
-  title: 3,
-  updatedAt: 5,
+const columns: IHeader<ISpreadSheet> = {
+  author: 2,
+  avatar: 1,
+  comments: 7,
+  createdAt: 5,
+  isNew: 0,
+  labels: 9,
+  participants: 8,
+  repo: 3,
+  title: 4,
+  updatedAt: 6,
 };
 
-const rowBuilder = (issue: IIssue): IRow<ISpreadSheet> => {
-  const {
-    title,
-    author,
-    url,
-    labels,
-    updatedAt,
-    createdAt,
-    comments,
-    participants,
-    repository: repo,
-  } = issue;
+const rowBuilderFactory = (prevSheet: object[][], header: IHeader<ISpreadSheet>, key: keyof ISpreadSheet) => {
+  const sanitize = (str: string) => str.replace(/["`']/g, "");
 
-  return {
-    author: author && author.login && `=HYPERLINK("${author.url}", "${author.login}")`,
-    avatar: author && author.avatarUrl && `=IMAGE("${author.avatarUrl}")`,
-    comments: comments.totalCount.toString(),
-    createdAt: (new Date(createdAt)).toDateString(),
-    labels: labels.edges.reduce((acc, e) => [...acc, e.node.name], []).join(", "),
-    participants: participants.totalCount.toString(),
-    repo: `=HYPERLINK("${repo.url}", "${repo.name.replace(/"/g, "'")}")`,
-    title: `=HYPERLINK("${url}", "${title.replace(/"/g, "'")}")`,
-    updatedAt: (new Date(updatedAt)).toDateString(),
+  const dict = prevSheet.reduce((acc, row) => {
+    const identifer = sanitize(row[header[key]].toString());
+    Logger.log(identifer);
+    return {
+      ...acc,
+      [identifer]: row,
+    };
+  }, {});
+
+  return (issue: IIssue): IRow<ISpreadSheet> => {
+    const {
+      title,
+      author,
+      url,
+      labels,
+      updatedAt,
+      createdAt,
+      comments,
+      participants,
+      repository: repo,
+    } = issue;
+
+    return {
+      author: author && author.login && `=HYPERLINK("${author.url}", "${author.login}")`,
+      avatar: author && author.avatarUrl && `=IMAGE("${author.avatarUrl}")`,
+      comments: comments.totalCount.toString(),
+      createdAt: (new Date(createdAt)).toDateString(),
+      isNew: sanitize(issue[key]) in dict ? "" : "🆕",
+      labels: labels.edges.reduce((acc, e) => [...acc, e.node.name], []).join(", "),
+      participants: participants.totalCount.toString(),
+      repo: `=HYPERLINK("${repo.url}", "${repo.name.replace(/"/g, "'")}")`,
+      title: `=HYPERLINK("${url}", "${title.replace(/"/g, "'")}")`,
+      updatedAt: (new Date(updatedAt)).toDateString(),
+    };
   };
 };
 
@@ -83,8 +99,11 @@ global.main = () => {
       Logger.log(`[${sheetName}] found no issue`);
       return;
     }
+
+    const prevSheet = getPrevSheet(sheet);
+    const rowBuilder = rowBuilderFactory(prevSheet, columns, "title");
     clearSheet(sheet);
-    fillSheet<IIssue, ISpreadSheet>(sheet, header, issues, rowBuilder);
+    fillSheet<IIssue, ISpreadSheet>(sheet, columns, issues, rowBuilder);
   });
 };
 
