@@ -1,9 +1,11 @@
 import { fetchIssuesRequestFactory, IIssue, IResponse } from "./github";
+import { sendSlackNotification } from "./slack";
 import { clearSheet, fillSheet, getPrevSheet, getSheets, IHeader, IRow } from "./spreadsheet";
 
 declare let global: any;
 
 const token = process.env.GITHUB_TOKEN;
+const webhook = process.env.SLACK_WEBHOOK;
 if (!token) {
   throw new Error("set GITHUB_TOKEN in your .env file");
 }
@@ -39,7 +41,6 @@ const rowBuilderFactory = (prevSheet: object[][], header: IHeader<ISpreadSheet>,
 
   const dict = prevSheet.reduce((acc, row) => {
     const identifer = sanitize(row[header[key]].toString());
-    Logger.log(identifer);
     return {
       ...acc,
       [identifer]: row,
@@ -74,6 +75,17 @@ const rowBuilderFactory = (prevSheet: object[][], header: IHeader<ISpreadSheet>,
   };
 };
 
+const withSlackNotification = (
+  rowBuilder: (issue: IIssue) => IRow<ISpreadSheet>,
+) => (issue: IIssue) => {
+  const row = rowBuilder(issue);
+  if (!!webhook && row.isNew.length > 0) {
+    const text = `${issue.repository.name}: <${issue.url}|${issue.title}>`;
+    sendSlackNotification(webhook, text);
+  }
+  return row;
+};
+
 global.main = () => {
   const fetchIssuesRequest = fetchIssuesRequestFactory<IResponse>(token);
   const sheets = getSheets();
@@ -103,7 +115,12 @@ global.main = () => {
     const prevSheet = getPrevSheet(sheet);
     const rowBuilder = rowBuilderFactory(prevSheet, columns, "title");
     clearSheet(sheet);
-    fillSheet<IIssue, ISpreadSheet>(sheet, columns, issues, rowBuilder);
+    fillSheet<IIssue, ISpreadSheet>(
+      sheet,
+      columns,
+      issues,
+      withSlackNotification(rowBuilder),
+    );
   });
 };
 
