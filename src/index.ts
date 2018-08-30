@@ -1,5 +1,5 @@
 import { fetchIssuesRequestFactory, IIssue, IResponse } from "./github";
-import { buildDataMatrix, clearSheet, fillSheet, getSheets } from "./spreadsheet";
+import { clearSheet, fillSheet, getSheets, IHeader, IRow } from "./spreadsheet";
 
 declare let global: any;
 
@@ -8,43 +8,57 @@ if (!token) {
   throw new Error("set GITHUB_TOKEN in your .env file");
 }
 
-global.main = () => {
-  const header = [[
-    "",
-    "author",
-    "repo.",
-    "title",
-    "created at",
-    "updated at",
-    "# of comments",
-    "# of participants",
-    "labels",
-  ]];
-  const rowBuilder = (issue: IIssue) => {
-    const {
-      title,
-      author,
-      url,
-      labels,
-      updatedAt,
-      createdAt,
-      comments,
-      participants,
-      repository: repo,
-    } = issue;
+interface ISpreadSheet {
+  avatar: string;
+  comments: string;
+  participants: string;
+  author: string;
+  createdAt: string;
+  labels: string;
+  repo: string;
+  title: string;
+  updatedAt: string;
+}
 
-    return [
-      author && author.avatarUrl && `=IMAGE("${author.avatarUrl}")`,
-      author && author.login && `=HYPERLINK("${author.url}", "${author.login}")`,
-      `=HYPERLINK("${repo.url}", "${repo.name.replace(/"/g, "'")}")`,
-      `=HYPERLINK("${url}", "${title.replace(/"/g, "'")}")`,
-      (new Date(createdAt)).toDateString(),
-      (new Date(updatedAt)).toDateString(),
-      comments.totalCount.toString(),
-      participants.totalCount.toString(),
-      labels.edges.reduce((acc, e) => [...acc, e.node.name], []).join(", "),
-    ];
+const header: IHeader<ISpreadSheet> = {
+  author: 1,
+  avatar: 0,
+  comments: 6,
+  createdAt: 4,
+  labels: 8,
+  participants: 7,
+  repo: 2,
+  title: 3,
+  updatedAt: 5,
+};
+
+const rowBuilder = (issue: IIssue): IRow<ISpreadSheet> => {
+  const {
+    title,
+    author,
+    url,
+    labels,
+    updatedAt,
+    createdAt,
+    comments,
+    participants,
+    repository: repo,
+  } = issue;
+
+  return {
+    author: author && author.login && `=HYPERLINK("${author.url}", "${author.login}")`,
+    avatar: author && author.avatarUrl && `=IMAGE("${author.avatarUrl}")`,
+    comments: comments.totalCount.toString(),
+    createdAt: (new Date(createdAt)).toDateString(),
+    labels: labels.edges.reduce((acc, e) => [...acc, e.node.name], []).join(", "),
+    participants: participants.totalCount.toString(),
+    repo: `=HYPERLINK("${repo.url}", "${repo.name.replace(/"/g, "'")}")`,
+    title: `=HYPERLINK("${url}", "${title.replace(/"/g, "'")}")`,
+    updatedAt: (new Date(updatedAt)).toDateString(),
   };
+};
+
+global.main = () => {
   const fetchIssuesRequest = fetchIssuesRequestFactory<IResponse>(token);
   const sheets = getSheets();
   sheets.forEach((sheet) => {
@@ -61,7 +75,7 @@ global.main = () => {
       });
       return;
     }
-    const issues = data.search.edges.reduce((acc, repoEdge) => [
+    const issues = data.search.edges.reduce((acc: IIssue[], repoEdge) => [
       ...acc,
       ...repoEdge.node.issues.edges.map((issueEdge) => issueEdge.node),
     ], []);
@@ -69,10 +83,8 @@ global.main = () => {
       Logger.log(`[${sheetName}] found no issue`);
       return;
     }
-    const dataMatrix = buildDataMatrix<IIssue>(issues, rowBuilder);
     clearSheet(sheet);
-    fillSheet(sheet, header);
-    fillSheet(sheet, dataMatrix, 1, 2);
+    fillSheet<IIssue, ISpreadSheet>(sheet, header, issues, rowBuilder);
   });
 };
 
